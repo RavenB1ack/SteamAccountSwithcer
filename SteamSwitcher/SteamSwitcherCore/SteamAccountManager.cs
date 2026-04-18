@@ -10,7 +10,7 @@ namespace SteamSwitcherCore
 {
     public class SteamAccountManager
     {
-        private const string DefaultSteamPath = @"Need to add"; //Можно указать свой дефолтный путь
+        private const string DefaultSteamPath = @"Need to add"; //You can add default path
         private const string ConfigFileName = "steamconfig.json";
 
         private string SteamPath = DefaultSteamPath;
@@ -79,8 +79,8 @@ namespace SteamSwitcherCore
                 SteamPath = DefaultSteamPath,
                 Accounts = new Dictionary<string, string>
                 {
-                    ["Need to Add"] = "need_to_add", //Можно указать дефолтные аккаунты
-                    ["Need to Add"] = "need_to_add" //Можно указать дефолтные аккаунты
+                    ["Need to Add"] = "need_to_add", //You can add default accounts
+                    ["Need to Add"] = "need_to_add"
                 }
             };
         }

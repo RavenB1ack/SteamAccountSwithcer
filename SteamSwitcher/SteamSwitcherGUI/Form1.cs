@@ -322,15 +322,34 @@ public partial class Form1 : Form
 
         e.Graphics.FillRectangle(new SolidBrush(backColor), e.Bounds);
 
-        var textRect = new Rectangle(e.Bounds.Left + 14, e.Bounds.Top + 8, e.Bounds.Width - 28, e.Bounds.Height - 16);
+        var hoverRect = new Rectangle(e.Bounds.Left + 14, e.Bounds.Top + 8, e.Bounds.Width - 28, e.Bounds.Height - 16);
         if (selected || hover)
         {
             using var highlightBrush = new SolidBrush(selected ? selectedColor : hoverColor);
-            e.Graphics.FillRectangle(highlightBrush, textRect);
+            e.Graphics.FillRectangle(highlightBrush, hoverRect);
         }
 
-        TextRenderer.DrawText(e.Graphics, text, accountList.Font, textRect, selected ? selectedTextColor : textColor,
-            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+        var textFlags = TextFormatFlags.HorizontalCenter 
+                      | TextFormatFlags.VerticalCenter 
+                      | TextFormatFlags.SingleLine 
+                      | TextFormatFlags.EndEllipsis 
+                      | TextFormatFlags.NoPadding;
+
+        var adjustedRect = new Rectangle(
+            hoverRect.X,
+            hoverRect.Y - 2,
+            hoverRect.Width,
+            hoverRect.Height
+        );
+
+        TextRenderer.DrawText(
+            e.Graphics, 
+            text, 
+            accountList.Font, 
+            adjustedRect, //changed from hoverRect to fix vertical alignment
+            selected ? selectedTextColor : textColor, 
+            textFlags
+        );
 
         using var lineBrush = new SolidBrush(isDarkTheme ? Color.FromArgb(70, 70, 70) : Color.FromArgb(220, 220, 220));
         e.Graphics.FillRectangle(lineBrush, e.Bounds.Left + 12, e.Bounds.Bottom - 1, e.Bounds.Width - 24, 1);

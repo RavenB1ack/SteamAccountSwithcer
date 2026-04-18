@@ -2,8 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamSwitcher", "SteamSwitcher\SteamSwitcher.csproj", "{157B372C-8DE7-A803-3085-FB39AC9B3454}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamSwitcherCore", "SteamSwitcher\SteamSwitcherCore\SteamSwitcherCore.csproj", "{E5E8D7A2-4B04-4B4F-A890-BF79A8B2E123}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamSwitcherGUI", "SteamSwitcher\SteamSwitcherGUI\SteamSwitcherGUI.csproj", "{FDFE301F-B63A-81C2-FE6D-6611748C9FBB}"
@@ -14,10 +12,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{157B372C-8DE7-A803-3085-FB39AC9B3454}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{157B372C-8DE7-A803-3085-FB39AC9B3454}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{157B372C-8DE7-A803-3085-FB39AC9B3454}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{157B372C-8DE7-A803-3085-FB39AC9B3454}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FDFE301F-B63A-81C2-FE6D-6611748C9FBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FDFE301F-B63A-81C2-FE6D-6611748C9FBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDFE301F-B63A-81C2-FE6D-6611748C9FBB}.Release|Any CPU.ActiveCfg = Release|Any CPU

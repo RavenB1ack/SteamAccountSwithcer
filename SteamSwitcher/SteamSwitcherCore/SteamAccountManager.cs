@@ -15,6 +15,9 @@ namespace SteamSwitcherCore
 
         private string SteamPath = DefaultSteamPath;
         public Dictionary<string, string> Accounts { get; } = new();
+        public bool IsWidgetMode { get; private set; }
+        public int WidgetPositionX { get; private set; }
+        public int WidgetPositionY { get; private set; }
 
         public SteamAccountManager()
         {
@@ -44,6 +47,10 @@ namespace SteamSwitcherCore
                 foreach (var account in config.Accounts)
                     Accounts[account.Key] = account.Value;
             }
+
+            IsWidgetMode = config.IsWidgetMode;
+            WidgetPositionX = config.WidgetPositionX;
+            WidgetPositionY = config.WidgetPositionY;
         }
 
         private Config ReadConfig(string filePath)
@@ -105,10 +112,27 @@ namespace SteamSwitcherCore
             File.WriteAllText(filePath, json);
         }
 
+        public void SaveWidgetSettings(bool isWidgetMode, int x, int y)
+        {
+            IsWidgetMode = isWidgetMode;
+            WidgetPositionX = x;
+            WidgetPositionY = y;
+
+            string configPath = Path.Combine(AppContext.BaseDirectory, ConfigFileName);
+            var config = ReadConfig(configPath);
+            config.IsWidgetMode = isWidgetMode;
+            config.WidgetPositionX = x;
+            config.WidgetPositionY = y;
+            WriteConfig(configPath, config);
+        }
+
         private sealed class Config
         {
             public string SteamPath { get; set; } = DefaultSteamPath;
             public Dictionary<string, string>? Accounts { get; set; } = new();
+            public bool IsWidgetMode { get; set; } = false;
+            public int WidgetPositionX { get; set; } = 100;
+            public int WidgetPositionY { get; set; } = 100;
         }
 
         public string GetSteamPath()

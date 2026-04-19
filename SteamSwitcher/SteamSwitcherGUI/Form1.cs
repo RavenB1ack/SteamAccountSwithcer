@@ -19,9 +19,11 @@ public partial class Form1 : Form
     private readonly Label infoIcon;
     private readonly ToolTip infoTooltip;
     private readonly Label themeToggleButton;
+    private readonly Label widgetToggleButton;
     private bool isSwitching;
     private bool isDarkTheme;
     private bool themeHover;
+    private bool isWidgetMode;
     private int hoverIndex = -1;
     private readonly string themeFile;
 
@@ -31,8 +33,31 @@ public partial class Form1 : Form
     [DllImport("user32.dll")]
     private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+
+    [DllImport("user32.dll")]
+    private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+    [DllImport("user32.dll")]
+    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    [DllImport("user32.dll")]
+    private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+    private delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+
     private const int WM_NCLBUTTONDOWN = 0xA1;
     private static readonly IntPtr HTCAPTION = new IntPtr(2);
+    private const int GWL_EXSTYLE = -20;
+    private const int WS_EX_TOOLWINDOW = 0x00000080;
+    private const int WS_EX_NOACTIVATE = 0x08000000;
 
     public Form1()
     {
@@ -45,6 +70,11 @@ public partial class Form1 : Form
         LoadTheme();
 
         manager = new SteamAccountManager();
+        isWidgetMode = manager.IsWidgetMode;
+        if (isWidgetMode)
+        {
+            Location = new Point(manager.WidgetPositionX, manager.WidgetPositionY);
+        }
         int accountCount = Math.Max(1, manager.Accounts.Count);
         int itemHeight = 44;
         int maxVisible = 8;
@@ -163,6 +193,23 @@ public partial class Form1 : Form
         themeToggleButton.MouseEnter += (sender, e) => { themeHover = true; themeToggleButton.Invalidate(); };
         themeToggleButton.MouseLeave += (sender, e) => { themeHover = false; themeToggleButton.Invalidate(); };
 
+        widgetToggleButton = new Label
+        {
+            Width = 26,
+            Height = 26,
+            Left = (accountList.Left + accountList.Right - 26) / 2,
+            Top = infoIcon.Top + (infoIcon.Height - 26) / 2,
+            Font = new Font("Segoe UI", 10F),
+            Cursor = Cursors.Hand,
+            TabStop = false,
+            BackColor = Color.Transparent,
+            Text = string.Empty
+        };
+        widgetToggleButton.Paint += WidgetToggleButton_Paint;
+        widgetToggleButton.Click += WidgetToggleButton_Click;
+        widgetToggleButton.MouseEnter += (sender, e) => { widgetToggleButton.Invalidate(); };
+        widgetToggleButton.MouseLeave += (sender, e) => { widgetToggleButton.Invalidate(); };
+
         logBox = new TextBox
         {
             Left = accountList.Left,
@@ -184,8 +231,16 @@ public partial class Form1 : Form
         Controls.Add(infoIcon);
         Controls.Add(logBox);
         Controls.Add(themeToggleButton);
+        Controls.Add(widgetToggleButton);
+
+        this.LocationChanged += Form1_LocationChanged;
 
         ApplyTheme();
+
+        if (isWidgetMode)
+        {
+            EnterWidgetMode();
+        }
     }
 
     private void LoadTheme()
@@ -248,6 +303,9 @@ public partial class Form1 : Form
         infoIcon.BackColor = Color.Transparent;
         infoIcon.ForeColor = textColor;
         infoIcon.Invalidate();
+        widgetToggleButton.BackColor = Color.Transparent;
+        widgetToggleButton.ForeColor = textColor;
+        widgetToggleButton.Invalidate();
 
         Invalidate();
     }
@@ -455,5 +513,128 @@ public partial class Form1 : Form
             var cutoutRect = new RectangleF(center.X - 2.2f, center.Y - 7.3f, 13.6f, 13.6f);
             e.Graphics.FillEllipse(backgroundBrush, cutoutRect);
         }
+    }
+
+    private void WidgetToggleButton_Paint(object? sender, PaintEventArgs e)
+    {
+        e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        var iconBackground = Color.Transparent; // No hover for now
+        if (iconBackground.A > 0)
+        {
+            using var backgroundBrush = new SolidBrush(iconBackground);
+            e.Graphics.FillRectangle(backgroundBrush, 0, 0, widgetToggleButton.Width - 1, widgetToggleButton.Height - 1);
+        }
+
+        using var borderPen = new Pen(isDarkTheme ? Color.FromArgb(120, 120, 120) : Color.FromArgb(200, 200, 200), 1.5F);
+        e.Graphics.DrawRectangle(borderPen, 0, 0, widgetToggleButton.Width - 1, widgetToggleButton.Height - 1);
+
+        var center = new PointF(widgetToggleButton.Width / 2F, widgetToggleButton.Height / 2F);
+        var iconColor = widgetToggleButton.ForeColor;
+
+        // Simple window icon: rectangle with lines
+        float rectWidth = 12f;
+        float rectHeight = 8f;
+        float x = center.X - rectWidth / 2;
+        float y = center.Y - rectHeight / 2;
+        using var rectPen = new Pen(iconColor, 1.5F);
+        e.Graphics.DrawRectangle(rectPen, x, y, rectWidth, rectHeight);
+        // Horizontal line for title bar
+        e.Graphics.DrawLine(rectPen, x + 1, y + 2, x + rectWidth - 1, y + 2);
+    }
+
+    private void WidgetToggleButton_Click(object? sender, EventArgs e)
+    {
+        ToggleWidgetMode();
+    }
+
+    private void ToggleWidgetMode()
+    {
+        isWidgetMode = !isWidgetMode;
+        if (isWidgetMode)
+        {
+            EnterWidgetMode();
+        }
+        else
+        {
+            ExitWidgetMode();
+        }
+        manager.SaveWidgetSettings(isWidgetMode, Location.X, Location.Y);
+    }
+
+    private void EnterWidgetMode()
+    {
+        // Hide title bar
+        titleBar.Visible = false;
+        // Adjust client size
+        ClientSize = new Size(ClientSize.Width, ClientSize.Height - titleBar.Height);
+        // Move controls up
+        accountList.Top -= titleBar.Height;
+        infoIcon.Top -= titleBar.Height;
+        themeToggleButton.Top -= titleBar.Height;
+        widgetToggleButton.Top -= titleBar.Height;
+        logBox.Top -= titleBar.Height;
+        // Make tool window to hide from alt+tab and prevent activation
+        int exStyle = GetWindowLong(Handle, GWL_EXSTYLE);
+        SetWindowLong(Handle, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
+        // Attach to desktop worker window
+        IntPtr workerW = GetWorkerW();
+        if (workerW != IntPtr.Zero)
+        {
+            SetParent(Handle, workerW);
+            // Set saved position after attaching to desktop
+            this.Location = new Point(manager.WidgetPositionX, manager.WidgetPositionY);
+        }
+        // Note: TopMost removed to prevent showing over other windows
+    }
+
+    private void ExitWidgetMode()
+    {
+        // Show title bar
+        titleBar.Visible = true;
+        // Adjust client size
+        ClientSize = new Size(ClientSize.Width, ClientSize.Height + titleBar.Height);
+        // Move controls down
+        accountList.Top += titleBar.Height;
+        infoIcon.Top += titleBar.Height;
+        themeToggleButton.Top += titleBar.Height;
+        widgetToggleButton.Top += titleBar.Height;
+        logBox.Top += titleBar.Height;
+        // Remove tool window style
+        int exStyle = GetWindowLong(Handle, GWL_EXSTYLE);
+        SetWindowLong(Handle, GWL_EXSTYLE, exStyle & ~(WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE));
+        // Detach from desktop
+        SetParent(Handle, IntPtr.Zero);
+        // Remove topmost
+        TopMost = false;
+    }
+
+    private void Form1_LocationChanged(object? sender, EventArgs e)
+    {
+        if (isWidgetMode)
+        {
+            manager.SaveWidgetSettings(true, Location.X, Location.Y);
+        }
+    }
+
+    private IntPtr GetWorkerW()
+    {
+        IntPtr workerW = IntPtr.Zero;
+        IntPtr progman = FindWindow("Progman", null);
+        if (progman != IntPtr.Zero)
+        {
+            // Send message to spawn WorkerW if not present
+            SendMessage(progman, 0x052C, IntPtr.Zero, IntPtr.Zero);
+        }
+        EnumWindows((hwnd, lParam) =>
+        {
+            IntPtr shellView = FindWindowEx(hwnd, IntPtr.Zero, "SHELLDLL_DefView", null);
+            if (shellView != IntPtr.Zero)
+            {
+                workerW = FindWindowEx(IntPtr.Zero, hwnd, "WorkerW", null);
+                return false; // stop enumeration
+            }
+            return true;
+        }, IntPtr.Zero);
+        return workerW;
     }
 }

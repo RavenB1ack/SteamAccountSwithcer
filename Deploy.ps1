@@ -33,8 +33,17 @@ if (-not $SkipTests) {
 # Step 2: Build Solution
 if (-not $SkipBuild) {
     Write-Host "`n--- Building Solution ---" -ForegroundColor Green
+
+    # Kill any existing SteamSwitcherGUI processes before building
+    $existingProcesses = Get-Process -Name "SteamSwitcherGUI" -ErrorAction SilentlyContinue
+    if ($existingProcesses) {
+        Write-Host "Terminating existing SteamSwitcherGUI processes before build..." -ForegroundColor Yellow
+        $existingProcesses | Stop-Process -Force
+        Start-Sleep -Seconds 2
+    }
+
     try {
-        $buildResult = dotnet build --configuration Release --verbosity minimal
+        dotnet build --configuration Release --verbosity minimal
         if ($LASTEXITCODE -ne 0) {
             Write-Host "❌ Build failed! Aborting deployment." -ForegroundColor Red
             exit 1

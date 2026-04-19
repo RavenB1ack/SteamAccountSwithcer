@@ -3,5 +3,8 @@
   "Accounts": {
     "Account Nickname1": "Steam username",
     "Account Nickname2": "Steam username"
-  }
+  },
+  "IsWidgetMode": false,
+  "WidgetPositionX": 100,
+  "WidgetPositionY": 100
 }

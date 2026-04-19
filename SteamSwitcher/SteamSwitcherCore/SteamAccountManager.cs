@@ -21,9 +21,19 @@ namespace SteamSwitcherCore
             LoadConfig();
         }
 
+        public SteamAccountManager(string configPath)
+        {
+            LoadConfig(configPath);
+        }
+
         private void LoadConfig()
         {
             string configPath = Path.Combine(AppContext.BaseDirectory, ConfigFileName);
+            LoadConfig(configPath);
+        }
+
+        private void LoadConfig(string configPath)
+        {
             var config = ReadConfig(configPath);
 
             SteamPath = string.IsNullOrWhiteSpace(config.SteamPath) ? DefaultSteamPath : config.SteamPath;
@@ -79,8 +89,8 @@ namespace SteamSwitcherCore
                 SteamPath = DefaultSteamPath,
                 Accounts = new Dictionary<string, string>
                 {
-                    ["Need to Add"] = "need_to_add", //You can add default accounts
-                    ["Need to Add"] = "need_to_add"
+                    ["Account 1"] = "need_to_add", //You can add default accounts
+                    ["Account 2"] = "need_to_add"
                 }
             };
         }
@@ -101,15 +111,9 @@ namespace SteamSwitcherCore
             public Dictionary<string, string>? Accounts { get; set; } = new();
         }
 
-        public void ShowAccounts()
+        public string GetSteamPath()
         {
-            Console.WriteLine("\n=== Доступные аккаунты Steam ===");
-            int index = 1;
-            foreach (var account in Accounts)
-            {
-                Console.WriteLine($"{index}. {account.Key} ({account.Value})");
-                index++;
-            }
+            return SteamPath;
         }
 
         public bool TrySwitchAccount(string accountKey, out string resultMessage)
@@ -143,6 +147,7 @@ namespace SteamSwitcherCore
 
             if (!File.Exists(SteamPath))
             {
+                Log($"❌ Steam.exe не найден: {SteamPath}");
                 resultMessage = $"Steam.exe не найден: {SteamPath}";
                 return false;
             }

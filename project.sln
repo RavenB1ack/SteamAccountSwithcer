@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamSwitcherCore", "SteamS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamSwitcherGUI", "SteamSwitcher\SteamSwitcherGUI\SteamSwitcherGUI.csproj", "{FDFE301F-B63A-81C2-FE6D-6611748C9FBB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamSwitcherTests", "SteamSwitcher\SteamSwitcherTests\SteamSwitcherTests.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 	{E5E8D7A2-4B04-4B4F-A890-BF79A8B2E123}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	{E5E8D7A2-4B04-4B4F-A890-BF79A8B2E123}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	{E5E8D7A2-4B04-4B4F-A890-BF79A8B2E123}.Release|Any CPU.Build.0 = Release|Any CPU
+	{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+	{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
